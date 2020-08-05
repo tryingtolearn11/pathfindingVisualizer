@@ -1,16 +1,18 @@
 import pygame
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
-BORDERWIDTH = 600
-BORDERHEIGHT = 600
+BORDERWIDTH = 800
+BORDERHEIGHT = 800
 CELLSIZE = 30
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
 
-XMARGIN = int((SCREENWIDTH - (CELLSIZE * ROWS + (COLS - 1))) / 2)
+XMARGIN = int((SCREENWIDTH - (CELLSIZE * ROWS + (COLS - 1)))/2)
 YMARGIN = int((SCREENHEIGHT - (CELLSIZE * COLS + (ROWS - 1))) / 2)
 
+print(XMARGIN)
+print(YMARGIN)
 
 BLUE = (0, 100, 200)
 Black = (0, 0, 0)
@@ -41,15 +43,16 @@ for i in range(ROWS):
         column.append(node)
     grid.append(column)
 
-    def drawGRID(surface):
-        for i in range(ROWS):
-            for j in range(COLS):
-                grid[i][j].drawNODE(surface)
 
-        for x in range(XMARGIN, SCREENWIDTH, CELLSIZE):
-            pygame.draw.line(surface, Black, (x, 0), (x, SCREENWIDTH))
-        for y in range(YMARGIN, SCREENHEIGHT, CELLSIZE):
-            pygame.draw.line(surface, Black, (0, y), (SCREENWIDTH, y))
+def drawGRID(surface):
+    for i in range(ROWS):
+        for j in range(COLS):
+            grid[i][j].drawNODE(surface)
+
+    for x in range(XMARGIN, SCREENWIDTH, CELLSIZE):
+        pygame.draw.line(surface, Black, (x, 0), (x, SCREENWIDTH))
+    for y in range(YMARGIN, SCREENHEIGHT, CELLSIZE):
+        pygame.draw.line(surface, Black, (0, y), (SCREENWIDTH, y))
 
 
 def leftTopofTile(a, b):
@@ -63,7 +66,7 @@ def display(surface):
     left, top = leftTopofTile(0, 0)
     width = COLS * CELLSIZE
     height = ROWS * CELLSIZE
-    pygame.draw.rect(surface, BLUE, (left - 5, top - 5, width + 11, height + 10), 5)
+    pygame.draw.rect(surface, BLUE, (left-4, top-4, width+10, height+10), 5)
     drawGRID(surface)
 
 
