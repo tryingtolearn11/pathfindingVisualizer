@@ -22,33 +22,31 @@ class Node:
         self.x = x
         self.y = y
         self.wall = False
-        self.body = pygame.Rect(self.x, self.y, CELLSIZE, CELLSIZE)
-
-    def drawNODE(self, surface):
         i = self.x * CELLSIZE + XMARGIN
         j = self.y * CELLSIZE + YMARGIN
+        self.body = pygame.Rect(i, j, CELLSIZE, CELLSIZE)
+
+    def drawNODE(self, surface):
+        #i = self.x * CELLSIZE + XMARGIN
+        #j = self.y * CELLSIZE + YMARGIN
         if self.wall:
-            pygame.draw.rect(surface, Black, (i, j, CELLSIZE, CELLSIZE))
+            pygame.draw.rect(surface, Black, self.body)
         elif not self.wall:
-            pygame.draw.rect(surface, White, (i, j, CELLSIZE, CELLSIZE))
+            pygame.draw.rect(surface, White, self.body)
 
 
-class Board:
-    def __init__(self, ROWS, COLS):
-        self.rows = ROWS
-        self.cols = COLS
-        self.grid = []
-        for i in range(self.rows):
-            self.column = []
-            for j in range(self.cols):
-                node = Node(i, j)
-                self.column.append(node)
-            self.grid.append(self.column)
+grid = []
+for i in range(ROWS):
+    column = []
+    for j in range(COLS):
+        node = Node(i, j)
+        column.append(node)
+    grid.append(column)
 
-    def drawGRID(self, surface):
-        for i in range(self.rows):
-            for j in range(self.cols):
-                self.grid[i][j].drawNODE(surface)
+    def drawGRID(surface):
+        for i in range(ROWS):
+            for j in range(COLS):
+                grid[i][j].drawNODE(surface)
 
         for x in range(XMARGIN, SCREENWIDTH, CELLSIZE):
             pygame.draw.line(surface, Black, (x, 0), (x, SCREENWIDTH))
@@ -68,14 +66,13 @@ def display(surface):
     width = COLS * CELLSIZE
     height = ROWS * CELLSIZE
     pygame.draw.rect(surface, BLUE, (left - 5, top - 5, width + 11, height + 10), 5)
-    grid = Board(ROWS, COLS)
-    grid.drawGRID(surface)
+    drawGRID(surface)
 
 
 def getMouseClick(surface, xpos, ypos):
     global grid
-    for i in range(SCREENWIDTH):
-        for j in range(SCREENHEIGHT):
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
             left, top = leftTopofTile(xpos, ypos)
             tileSelector = pygame.Rect(left, top, CELLSIZE, CELLSIZE)
             if tileSelector.collidepoint(xpos, ypos):
@@ -84,7 +81,7 @@ def getMouseClick(surface, xpos, ypos):
 
 
 def main():
-    grid = Board(ROWS, COLS)
+    global grid
     pygame.init()
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
@@ -96,15 +93,11 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONUP:
                 xpos, ypos = getMouseClick(myWindow, event.pos[0], event.pos[1])
-                for i in range(grid.rows):
-                    for j in range(grid.cols):
-                        if grid.grid[i][j].body.collidepoint(event.pos):
-                            print(grid.grid[i][j])
-                            grid.grid[i][j].wall = True
-
-
-
-
+                for x in range(len(grid)):
+                    for y in range(len(grid[x])):
+                        if grid[x][y].body.collidepoint(event.pos):
+                            print("Grid :", x, y)
+                            grid[x][y].wall = True
 
         display(myWindow)
         pygame.display.update()
