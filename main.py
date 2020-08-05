@@ -1,4 +1,5 @@
 import pygame
+import queue
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 800
@@ -50,6 +51,52 @@ for i in range(ROWS):
     grid.append(column)
 
 
+def neighbors(grid, node):
+    walls = []
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if j > 0:
+                top = grid[i][j - 1]
+            else:
+                top = None
+            if i < len(grid) - 1:
+                right = grid[i + 1][j]
+            else:
+                right = None
+            if j < len(grid[i]) - 1:
+                bottom = grid[i][j + 1]
+            else:
+                bottom = None
+            if i > 0:
+                left = grid[i - 1][j]
+            else:
+                left = None
+
+            if top and not top.wall:
+                walls.append(top)
+            if right and not right.wall:
+                walls.append(right)
+            if bottom and not bottom.wall:
+                walls.append(bottom)
+            if left and not left.wall:
+                walls.append(left)
+    return walls
+
+
+def bfs(grid, STARTPOSITION):
+
+    frontier = queue.Queue()
+    frontier.put(STARTPOSITION)
+    came_from = {}
+    came_from[STARTPOSITION] = None
+
+    while not frontier.empty():
+        current = frontier.get()
+        for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                neighbors(grid, grid[i][j])
+
+
 def drawGRID(surface):
     for i in range(ROWS):
         for j in range(COLS):
@@ -76,6 +123,7 @@ def display(surface):
     drawGRID(surface)
     surface.blit(STARTNODE_SURF, STARTNODE_RECT)
     surface.blit(ENDNODE_SURF, ENDNODE_RECT)
+    surface.blit(BEGIN_SURF, BEGIN_RECT)
 
 
 def getMouseClick(surface, xpos, ypos):
@@ -98,14 +146,17 @@ def makeButton(text, color, bgcolor, top, left):
 
 def main():
     global grid, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
+    global BEGIN_SURF, BEGIN_RECT
     pygame.init()
     markStartPos = False
     markEndPos = False
+    beginSearch = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
     BASICFONT = pygame.font.SysFont('arial', 20)
     STARTNODE_SURF, STARTNODE_RECT = makeButton('Start Node', Black, Green, SCREENWIDTH - 900, SCREENHEIGHT - 950)
     ENDNODE_SURF, ENDNODE_RECT = makeButton('End Node', Black, Red, SCREENWIDTH - 200, SCREENHEIGHT - 950)
+    BEGIN_SURF, BEGIN_RECT = makeButton('BEGIN SEARCH', Black, BLUE, SCREENWIDTH - 900, SCREENWIDTH - 90)
     running = True
     while running:
         for event in pygame.event.get():
@@ -141,6 +192,10 @@ def main():
                             if grid[x][y].currentEnd:
                                 grid[x][y].currentEnd = False
                                 grid[x][y].wall = False
+
+                if BEGIN_RECT.collidepoint(event.pos):
+                    beginSearch = True
+                    bfs(grid, STARTPOSITION)
 
 
         display(myWindow)
