@@ -3,7 +3,7 @@ SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 600
 BORDERHEIGHT = 600
-CELLSIZE = 40
+CELLSIZE = 30
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
@@ -21,14 +21,12 @@ class Node:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.wall = False
         i = self.x * CELLSIZE + XMARGIN
         j = self.y * CELLSIZE + YMARGIN
+        self.wall = False
         self.body = pygame.Rect(i, j, CELLSIZE, CELLSIZE)
 
     def drawNODE(self, surface):
-        #i = self.x * CELLSIZE + XMARGIN
-        #j = self.y * CELLSIZE + YMARGIN
         if self.wall:
             pygame.draw.rect(surface, Black, self.body)
         elif not self.wall:
