@@ -11,12 +11,12 @@ print("ROWS: ", ROWS, "COLS: ", COLS)
 XMARGIN = int((SCREENWIDTH - (CELLSIZE * ROWS + (COLS - 1)))/2)
 YMARGIN = int((SCREENHEIGHT - (CELLSIZE * COLS + (ROWS - 1))) / 2)
 
-print(XMARGIN)
-print(YMARGIN)
 
 BLUE = (0, 100, 200)
 Black = (0, 0, 0)
 White = (255, 255, 255)
+Green = (0, 200, 100)
+Red = (200, 50, 50)
 
 
 class Node:
@@ -27,12 +27,18 @@ class Node:
         j = self.y * CELLSIZE + YMARGIN
         self.wall = False
         self.body = pygame.Rect(i, j, CELLSIZE, CELLSIZE)
+        self.currentStart = False
+        self.currentEnd = False
 
     def drawNODE(self, surface):
         if self.wall:
             pygame.draw.rect(surface, Black, self.body)
         elif not self.wall:
             pygame.draw.rect(surface, White, self.body)
+        if self.currentStart:
+            pygame.draw.rect(surface, Green, self.body)
+        if self.currentEnd:
+            pygame.draw.rect(surface, Red, self.body)
 
 
 grid = []
@@ -68,6 +74,8 @@ def display(surface):
     height = ROWS * CELLSIZE
     pygame.draw.rect(surface, BLUE, (left-4, top-4, width+10, height+10), 5)
     drawGRID(surface)
+    surface.blit(STARTNODE_SURF, STARTNODE_RECT)
+    surface.blit(ENDNODE_SURF, ENDNODE_RECT)
 
 
 def getMouseClick(surface, xpos, ypos):
@@ -81,12 +89,23 @@ def getMouseClick(surface, xpos, ypos):
     return (None, None)
 
 
+def makeButton(text, color, bgcolor, top, left):
+    textSurface = BASICFONT.render(text, True, color, bgcolor)
+    textRect = textSurface.get_rect()
+    textRect.topleft = (top, left)
+    return (textSurface, textRect)
+
+
 def main():
-    global grid
+    global grid, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
     pygame.init()
+    markStartPos = False
+    markEndPos = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
-
+    BASICFONT = pygame.font.SysFont('arial', 20)
+    STARTNODE_SURF, STARTNODE_RECT = makeButton('Start Node', Black, Green, SCREENWIDTH - 900, SCREENHEIGHT - 950)
+    ENDNODE_SURF, ENDNODE_RECT = makeButton('End Node', Black, Red, SCREENWIDTH - 200, SCREENHEIGHT - 950)
     running = True
     while running:
         for event in pygame.event.get():
@@ -99,6 +118,30 @@ def main():
                         if grid[x][y].body.collidepoint(event.pos):
                             print("Grid :", x, y)
                             grid[x][y].wall = True
+                            if markStartPos:
+                                grid[x][y].currentStart = True
+                                STARTPOSITION = grid[x][y]
+                                markStartPos = False
+                            if markEndPos:
+                                grid[x][y].currentEnd = True
+                                ENDPOSITION = grid[x][y]
+                                markEndPos = False
+                if STARTNODE_RECT.collidepoint(event.pos):
+                    markStartPos = True
+                    for x in range(len(grid)):
+                        for y in range(len(grid[x])):
+                            if grid[x][y].currentStart:
+                                grid[x][y].currentStart = False
+                                grid[x][y].wall = False
+
+                if ENDNODE_RECT.collidepoint(event.pos):
+                    markEndPos = True
+                    for x in range(len(grid)):
+                        for y in range(len(grid[x])):
+                            if grid[x][y].currentEnd:
+                                grid[x][y].currentEnd = False
+                                grid[x][y].wall = False
+
 
         display(myWindow)
         pygame.display.update()
