@@ -1,5 +1,6 @@
 import pygame
 import queue
+import random
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 800
@@ -8,6 +9,7 @@ CELLSIZE = 30
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
+FPS = 30
 
 XMARGIN = int((SCREENWIDTH - (CELLSIZE * ROWS + (COLS - 1)))/2)
 YMARGIN = int((SCREENHEIGHT - (CELLSIZE * COLS + (ROWS - 1))) / 2)
@@ -30,6 +32,7 @@ class Node:
         self.body = pygame.Rect(i, j, CELLSIZE, CELLSIZE)
         self.currentStart = False
         self.currentEnd = False
+        self.reached = False
 
     def drawNODE(self, surface):
         if self.wall:
@@ -40,6 +43,40 @@ class Node:
             pygame.draw.rect(surface, Green, self.body)
         if self.currentEnd:
             pygame.draw.rect(surface, Red, self.body)
+        if self.reached:
+            pygame.draw.rect(surface, BLUE, self.body)
+
+    def getNeighbors(self, grid):
+        self.neighbors = []
+        if self.x > 0:
+            top = grid[self.x][self.y - 1]
+        else:
+            top = None
+        if self.x < len(grid) - 1:
+            right = grid[self.x + 1][self.y]
+        else:
+            right = None
+        if self.y < len(grid[i]) - 1:
+            bottom = grid[self.x][self.y + 1]
+        else:
+            bottom = None
+        if self.x > 0:
+            left = grid[self.x - 1][self.y]
+        else:
+            left = None
+
+        if top and not top.wall:
+            self.neighbors.append(top)
+        if right and not right.wall:
+            self.neighbors.append(right)
+        if bottom and not bottom.wall:
+            self.neighbors.append(bottom)
+        if left and not left.wall:
+            self.neighbors.append(left)
+        return self.neighbors
+
+    def marker(self, surface):
+        pygame.draw.rect(surface, (100, 100, 100), self.body)
 
 
 grid = []
@@ -51,51 +88,15 @@ for i in range(ROWS):
     grid.append(column)
 
 
-def neighbors(grid, node):
-    walls = []
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            if j > 0:
-                top = grid[i][j - 1]
-            else:
-                top = None
-            if i < len(grid) - 1:
-                right = grid[i + 1][j]
-            else:
-                right = None
-            if j < len(grid[i]) - 1:
-                bottom = grid[i][j + 1]
-            else:
-                bottom = None
-            if i > 0:
-                left = grid[i - 1][j]
-            else:
-                left = None
-
-            if top and not top.wall:
-                walls.append(top)
-            if right and not right.wall:
-                walls.append(right)
-            if bottom and not bottom.wall:
-                walls.append(bottom)
-            if left and not left.wall:
-                walls.append(left)
-    return walls
-
-
 def bfs(grid, STARTPOSITION):
-
-    frontier = queue.Queue()
-    frontier.put(STARTPOSITION)
-    came_from = {}
-    came_from[STARTPOSITION] = None
-
-    while not frontier.empty():
-        current = frontier.get()
-        for i in range(len(grid)):
-            for j in range(len(grid[i])):
-                neighbors(grid, grid[i][j])
-
+    current = STARTPOSITION
+    frontier = []
+    current.reached = True
+    while True:
+        n = current.getNeighbors(grid)
+        for next in n:
+            next.reached = True
+            current = next
 
 def drawGRID(surface):
     for i in range(ROWS):
@@ -145,7 +146,7 @@ def makeButton(text, color, bgcolor, top, left):
 
 
 def main():
-    global grid, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
+    global grid, FPS, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
     global BEGIN_SURF, BEGIN_RECT
     pygame.init()
     markStartPos = False
@@ -153,6 +154,7 @@ def main():
     beginSearch = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
+    FPSclock = pygame.time.Clock()
     BASICFONT = pygame.font.SysFont('arial', 20)
     STARTNODE_SURF, STARTNODE_RECT = makeButton('Start Node', Black, Green, SCREENWIDTH - 900, SCREENHEIGHT - 950)
     ENDNODE_SURF, ENDNODE_RECT = makeButton('End Node', Black, Red, SCREENWIDTH - 200, SCREENHEIGHT - 950)
@@ -197,7 +199,7 @@ def main():
                     beginSearch = True
                     bfs(grid, STARTPOSITION)
 
-
+        FPSclock.tick(FPS)
         display(myWindow)
         pygame.display.update()
 
