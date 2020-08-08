@@ -73,7 +73,7 @@ class Node:
             self.neighbors.append(bottom)
         if left and not left.wall:
             self.neighbors.append(left)
-        return self.neighbors
+
 
     def marker(self, surface):
         pygame.draw.rect(surface, (100, 100, 100), self.body)
@@ -89,14 +89,23 @@ for i in range(ROWS):
 
 
 def bfs(grid, STARTPOSITION):
-    current = STARTPOSITION
-    frontier = []
-    current.reached = True
-    while True:
-        n = current.getNeighbors(grid)
-        for next in n:
-            next.reached = True
-            current = next
+    frontier = queue.Queue()
+    frontier.put(STARTPOSITION)
+    #reached = set()
+    #reached.add(STARTPOSITION)
+
+    while not frontier.empty():
+
+        current = frontier.get()
+        current.getNeighbors(grid)
+        print("neighbors :", len(current.neighbors))
+        for next in current.neighbors:
+            if not next.reached:
+                next.reached = True
+                frontier.put(next)
+                print("length of frontier :", frontier.qsize())
+                #reached.add(next)
+
 
 def drawGRID(surface):
     for i in range(ROWS):
@@ -151,7 +160,6 @@ def main():
     pygame.init()
     markStartPos = False
     markEndPos = False
-    beginSearch = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
     FPSclock = pygame.time.Clock()
@@ -196,7 +204,6 @@ def main():
                                 grid[x][y].wall = False
 
                 if BEGIN_RECT.collidepoint(event.pos):
-                    beginSearch = True
                     bfs(grid, STARTPOSITION)
 
         FPSclock.tick(FPS)
