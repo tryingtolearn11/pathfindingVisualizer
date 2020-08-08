@@ -1,11 +1,11 @@
 import pygame
 import queue
-import random
+
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
-BORDERWIDTH = 800
-BORDERHEIGHT = 800
-CELLSIZE = 30
+BORDERWIDTH = 400
+BORDERHEIGHT = 400
+CELLSIZE = 60
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
@@ -89,22 +89,18 @@ for i in range(ROWS):
 
 
 def bfs(grid, STARTPOSITION):
-    frontier = queue.Queue()
-    frontier.put(STARTPOSITION)
-    #reached = set()
-    #reached.add(STARTPOSITION)
+    q = queue.Queue()
+    q.put(STARTPOSITION)
 
-    while not frontier.empty():
-
-        current = frontier.get()
+    while not q.empty():
+        current = q.get()
         current.getNeighbors(grid)
         print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
             if not next.reached:
                 next.reached = True
-                frontier.put(next)
-                print("length of frontier :", frontier.qsize())
-                #reached.add(next)
+                q.put(next)
+                print("length of frontier :", q.qsize())
 
 
 def drawGRID(surface):
@@ -129,7 +125,7 @@ def display(surface):
     left, top = leftTopofTile(0, 0)
     width = COLS * CELLSIZE
     height = ROWS * CELLSIZE
-    pygame.draw.rect(surface, BLUE, (left-4, top-4, width+10, height+10), 5)
+    pygame.draw.rect(surface, Red, (left-4, top-4, width+10, height+10), 5)
     drawGRID(surface)
     surface.blit(STARTNODE_SURF, STARTNODE_RECT)
     surface.blit(ENDNODE_SURF, ENDNODE_RECT)
