@@ -48,8 +48,7 @@ class Node:
             if not self.currentStart and not self.currentEnd:
                 pygame.draw.rect(surface, BLUE, self.body)
 
-
-
+    # TODO: TOP CORNERS DONT RECOGNIZE WALLS
     def getNeighbors(self, grid):
         self.neighbors = []
         if not self.wall:
@@ -105,7 +104,7 @@ def bfs(grid, STARTPOSITION, ENDPOSITION):
             print("FOUND END")
             break
         current.getNeighbors(grid)
-        print("neighbors :", len(current.neighbors))
+        # print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
             if not next.reached and not next.wall:
                 #next.marker()
@@ -118,7 +117,7 @@ def bfs(grid, STARTPOSITION, ENDPOSITION):
 
 def drawPath(parentCell, surface):
     for x, y in parentCell.items():
-        #print("Current X : ", x, "Previous Y : ", y)
+        # print("Current X : ", x, "Previous Y : ", y)
         pygame.draw.rect(surface, Yellow, x.body)
 
 
@@ -194,6 +193,8 @@ def main():
                         if grid[x][y].body.collidepoint(event.pos):
                             print("Grid :", x, y)
                             grid[x][y].wall = True
+                            grid[x][y].currentStart = False
+                            grid[x][y].currentEnd = False
                             if markStartPos:
                                 grid[x][y].currentStart = True
                                 STARTPOSITION = grid[x][y]
