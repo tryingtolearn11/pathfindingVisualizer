@@ -1,15 +1,15 @@
 import pygame
-from collections import deque
+import queue
 
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 800
 BORDERHEIGHT = 800
-CELLSIZE = 60
+CELLSIZE = 50
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
-FPS = 20
+FPS = 30
 
 XMARGIN = int((SCREENWIDTH - (CELLSIZE * ROWS + (COLS - 1)))/2)
 YMARGIN = int((SCREENHEIGHT - (CELLSIZE * COLS + (ROWS - 1))) / 2)
@@ -48,7 +48,6 @@ class Node:
             if not self.currentStart and not self.currentEnd:
                 pygame.draw.rect(surface, BLUE, self.body)
 
-    # TODO: TOP CORNERS DONT RECOGNIZE WALLS
     def getNeighbors(self, grid):
         self.neighbors = []
         if not self.wall:
@@ -79,10 +78,6 @@ class Node:
                 self.neighbors.append(left)
 
 
-    def marker(self, surface):
-        pygame.draw.rect(surface, (100, 100, 100), self.body)
-
-
 grid = []
 for i in range(ROWS):
     column = []
@@ -91,34 +86,51 @@ for i in range(ROWS):
         column.append(node)
     grid.append(column)
 
+# Lets add weights to the graph
+weights = {}
+
+
+def cost(grid, current, next):
+    return weights.get(next, 1)
+
 
 def bfs(grid, STARTPOSITION, ENDPOSITION):
-    q = deque()
-    q.append(STARTPOSITION)
+    q = queue.PriorityQueue()
+    q.put(STARTPOSITION, 0)
     parentCell = {}
+    costOfPath = {}
     parentCell[STARTPOSITION] = None
+    costOfPath[STARTPOSITION] = 0
     print("ENDPOSITION", ENDPOSITION)
-    while len(q) > 0:
-        current = q.popleft()
+
+    while not q.empty():
+        current = q.get()
+
         if current == ENDPOSITION:
             print("FOUND END")
             break
         current.getNeighbors(grid)
-        # print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
-            if not next.reached and not next.wall:
-                #next.marker()
-                q.append(next)
+
+            # Update the cost for the path
+            newCost = costOfPath[current] + cost(grid, current, next)
+            total = 0
+            for p in costOfPath:
+                total += costOfPath[p]
+            if next not in costOfPath or newCost <= total:
+                print(costOfPath)
+                print("total :", total)
+                costOfPath[next] = newCost
+                priority = newCost
+                #q.put(next, priority)
+                #print("priority", priority)
+                print("newCost", newCost)
+                #print("COST OF PATH[CURRENT]", costOfPath[current])
+                #print("COST", cost(grid, current, next))
                 parentCell[next] = current
                 next.reached = True
 
-    return parentCell
-
-
-def drawPath(parentCell, surface):
-    for x, y in parentCell.items():
-        # print("Current X : ", x, "Previous Y : ", y)
-        pygame.draw.rect(surface, Yellow, x.body)
+    return parentCell, costOfPath
 
 
 def drawGRID(surface):
@@ -224,8 +236,7 @@ def main():
                                 grid[x][y].wall = False
 
                 if BEGIN_RECT.collidepoint(event.pos):
-                    parentCell = bfs(grid, STARTPOSITION, ENDPOSITION)
-                    drawPath(parentCell, myWindow)
+                    bfs(grid, STARTPOSITION, ENDPOSITION)
 
         FPSclock.tick(FPS)
         display(myWindow)
