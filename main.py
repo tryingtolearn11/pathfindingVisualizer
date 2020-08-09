@@ -3,8 +3,8 @@ from collections import deque
 
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
-BORDERWIDTH = 400
-BORDERHEIGHT = 400
+BORDERWIDTH = 800
+BORDERHEIGHT = 800
 CELLSIZE = 60
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
@@ -52,7 +52,7 @@ class Node:
     def getNeighbors(self, grid):
         self.neighbors = []
         if not self.wall:
-            if self.x > 0:
+            if self.y > 0:
                 top = grid[self.x][self.y - 1]
             else:
                 top = None
@@ -106,7 +106,7 @@ def bfs(grid, STARTPOSITION, ENDPOSITION):
         current.getNeighbors(grid)
         # print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
-            if not next.reached and not next.wall:
+            if not next.reached:
                 #next.marker()
                 q.append(next)
                 parentCell[next] = current
