@@ -1,5 +1,5 @@
 import pygame
-import queue
+from collections import deque
 
 SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
@@ -9,7 +9,7 @@ CELLSIZE = 60
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
-FPS = 30
+FPS = 20
 
 XMARGIN = int((SCREENWIDTH - (CELLSIZE * ROWS + (COLS - 1)))/2)
 YMARGIN = int((SCREENHEIGHT - (CELLSIZE * COLS + (ROWS - 1))) / 2)
@@ -65,13 +65,13 @@ class Node:
         else:
             left = None
 
-        if top and not top.wall:
+        if top:
             self.neighbors.append(top)
-        if right and not right.wall:
+        if right:
             self.neighbors.append(right)
-        if bottom and not bottom.wall:
+        if bottom:
             self.neighbors.append(bottom)
-        if left and not left.wall:
+        if left:
             self.neighbors.append(left)
 
 
@@ -89,18 +89,17 @@ for i in range(ROWS):
 
 
 def bfs(grid, STARTPOSITION):
-    q = queue.Queue()
-    q.put(STARTPOSITION)
+    q = deque()
+    q.append(STARTPOSITION)
 
-    while not q.empty():
-        current = q.get()
+    while len(q) > 0:
+        current = q.popleft()
         current.getNeighbors(grid)
         print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
-            if not next.reached:
+            if not next.reached and not next.wall:
+                q.append(next)
                 next.reached = True
-                q.put(next)
-                print("length of frontier :", q.qsize())
 
 
 def drawGRID(surface):
