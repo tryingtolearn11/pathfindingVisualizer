@@ -106,7 +106,7 @@ def bfs(grid, STARTPOSITION, ENDPOSITION):
         current.getNeighbors(grid)
         # print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
-            if not next.reached:
+            if not next.reached and not next.wall:
                 #next.marker()
                 q.append(next)
                 parentCell[next] = current
