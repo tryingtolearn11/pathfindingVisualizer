@@ -20,6 +20,7 @@ Black = (0, 0, 0)
 White = (255, 255, 255)
 Green = (0, 200, 100)
 Red = (200, 50, 50)
+Yellow = (255, 255, 0)
 
 
 class Node:
@@ -44,35 +45,39 @@ class Node:
         if self.currentEnd:
             pygame.draw.rect(surface, Red, self.body)
         if self.reached:
-            pygame.draw.rect(surface, BLUE, self.body)
+            if not self.currentStart and not self.currentEnd:
+                pygame.draw.rect(surface, BLUE, self.body)
+
+
 
     def getNeighbors(self, grid):
         self.neighbors = []
-        if self.x > 0:
-            top = grid[self.x][self.y - 1]
-        else:
-            top = None
-        if self.x < len(grid) - 1:
-            right = grid[self.x + 1][self.y]
-        else:
-            right = None
-        if self.y < len(grid[i]) - 1:
-            bottom = grid[self.x][self.y + 1]
-        else:
-            bottom = None
-        if self.x > 0:
-            left = grid[self.x - 1][self.y]
-        else:
-            left = None
+        if not self.wall:
+            if self.x > 0:
+                top = grid[self.x][self.y - 1]
+            else:
+                top = None
+            if self.x < len(grid) - 1:
+                right = grid[self.x + 1][self.y]
+            else:
+                right = None
+            if self.y < len(grid[i]) - 1:
+                bottom = grid[self.x][self.y + 1]
+            else:
+                bottom = None
+            if self.x > 0:
+                left = grid[self.x - 1][self.y]
+            else:
+                left = None
 
-        if top:
-            self.neighbors.append(top)
-        if right:
-            self.neighbors.append(right)
-        if bottom:
-            self.neighbors.append(bottom)
-        if left:
-            self.neighbors.append(left)
+            if top:
+                self.neighbors.append(top)
+            if right:
+                self.neighbors.append(right)
+            if bottom:
+                self.neighbors.append(bottom)
+            if left:
+                self.neighbors.append(left)
 
 
     def marker(self, surface):
@@ -88,18 +93,33 @@ for i in range(ROWS):
     grid.append(column)
 
 
-def bfs(grid, STARTPOSITION):
+def bfs(grid, STARTPOSITION, ENDPOSITION):
     q = deque()
     q.append(STARTPOSITION)
-
+    parentCell = {}
+    parentCell[STARTPOSITION] = None
+    print("ENDPOSITION", ENDPOSITION)
     while len(q) > 0:
         current = q.popleft()
+        if current == ENDPOSITION:
+            print("FOUND END")
+            break
         current.getNeighbors(grid)
         print("neighbors :", len(current.neighbors))
         for next in current.neighbors:
             if not next.reached and not next.wall:
+                #next.marker()
                 q.append(next)
+                parentCell[next] = current
                 next.reached = True
+
+    return parentCell
+
+
+def drawPath(parentCell, surface):
+    for x, y in parentCell.items():
+        #print("Current X : ", x, "Previous Y : ", y)
+        pygame.draw.rect(surface, Yellow, x.body)
 
 
 def drawGRID(surface):
@@ -177,10 +197,14 @@ def main():
                             if markStartPos:
                                 grid[x][y].currentStart = True
                                 STARTPOSITION = grid[x][y]
+                                grid[x][y].wall = False
+                                grid[x][y].currentEnd = False
                                 markStartPos = False
                             if markEndPos:
                                 grid[x][y].currentEnd = True
+                                grid[x][y].currentStart = False
                                 ENDPOSITION = grid[x][y]
+                                grid[x][y].wall = False
                                 markEndPos = False
                 if STARTNODE_RECT.collidepoint(event.pos):
                     markStartPos = True
@@ -199,7 +223,8 @@ def main():
                                 grid[x][y].wall = False
 
                 if BEGIN_RECT.collidepoint(event.pos):
-                    bfs(grid, STARTPOSITION)
+                    parentCell = bfs(grid, STARTPOSITION, ENDPOSITION)
+                    drawPath(parentCell, myWindow)
 
         FPSclock.tick(FPS)
         display(myWindow)
