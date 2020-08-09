@@ -90,11 +90,12 @@ for i in range(ROWS):
 weights = {}
 
 
+# Cost = 1 between two neighbors
 def cost(grid, current, next):
     return weights.get(next, 1)
 
 
-def bfs(grid, STARTPOSITION, ENDPOSITION):
+def dijkstra(grid, STARTPOSITION, ENDPOSITION):
     q = queue.PriorityQueue()
     q.put(STARTPOSITION, 0)
     parentCell = {}
@@ -117,7 +118,8 @@ def bfs(grid, STARTPOSITION, ENDPOSITION):
             total = 0
             for p in costOfPath:
                 total += costOfPath[p]
-            if next not in costOfPath or newCost <= total:
+            # TODO: fix bug- '<' not supported
+            if next not in costOfPath or newCost < total:
                 print(costOfPath)
                 print("total :", total)
                 costOfPath[next] = newCost
@@ -236,7 +238,7 @@ def main():
                                 grid[x][y].wall = False
 
                 if BEGIN_RECT.collidepoint(event.pos):
-                    bfs(grid, STARTPOSITION, ENDPOSITION)
+                    dijkstra(grid, STARTPOSITION, ENDPOSITION)
 
         FPSclock.tick(FPS)
         display(myWindow)
