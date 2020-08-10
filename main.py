@@ -34,7 +34,9 @@ class Node:
         self.currentStart = False
         self.currentEnd = False
         self.reached = False
+        self.path = False
 
+    # Comparison operator defined
     def __lt__(ob1, ob2):
         return (ob1.x, ob1.y) < (ob2.x, ob2.y)
 
@@ -48,8 +50,10 @@ class Node:
         if self.currentEnd:
             pygame.draw.rect(surface, Red, self.body)
         if self.reached:
-            if not self.currentStart and not self.currentEnd:
+            if not self.currentStart and not self.currentEnd and not self.path:
                 pygame.draw.rect(surface, BLUE, self.body)
+            elif self.path and not self.currentEnd:
+                pygame.draw.rect(surface, Yellow, self.body)
 
     def getNeighbors(self, grid):
         self.neighbors = []
@@ -135,7 +139,20 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
                 parentCell[next] = current
                 next.reached = True
 
-    return parentCell, costOfPath
+    return parentCell
+
+
+def reconstructPath(parentCell, STARTPOSITION, ENDPOSITION):
+    current = ENDPOSITION
+    path = []
+    while current != STARTPOSITION:
+        path.append(current)
+        current.path = True
+        current = parentCell[current]
+    path.append(STARTPOSITION)
+    path.reverse()
+    print(path)
+    return path
 
 
 def drawGRID(surface):
@@ -241,7 +258,8 @@ def main():
                                 grid[x][y].wall = False
 
                 if BEGIN_RECT.collidepoint(event.pos):
-                    dijkstra(grid, STARTPOSITION, ENDPOSITION)
+                    parentCell = dijkstra(grid, STARTPOSITION, ENDPOSITION)
+                    reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
 
         FPSclock.tick(FPS)
         display(myWindow)
