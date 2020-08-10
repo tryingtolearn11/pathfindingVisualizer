@@ -117,18 +117,12 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
         if current == ENDPOSITION:
             print("FOUND END")
             break
+
         current.getNeighbors(grid)
         for next in current.neighbors:
-
             # Update the cost for the path
             newCost = costOfPath[current] + cost(grid, current, next)
-            total = 0
-            for p in costOfPath:
-                total += costOfPath[p]
-            # TODO: fix bug- '<' not supported
-            if next not in costOfPath or newCost < costOfPath[next]:
-                #print(costOfPath)
-                #print("total :", total)
+            while next not in costOfPath or newCost < costOfPath[next]:
                 costOfPath[next] = newCost
                 priority = newCost
                 q.put(next, priority)
