@@ -18,9 +18,11 @@ YMARGIN = int((SCREENHEIGHT - (CELLSIZE * COLS + (ROWS - 1))) / 2)
 BLUE = (0, 100, 200)
 Black = (0, 0, 0)
 White = (255, 255, 255)
-Green = (0, 200, 100)
-Red = (200, 50, 50)
-Yellow = (255, 255, 0)
+Green = (0, 200, 100, 255)
+Red = (200, 10, 10)
+Magenta = (255, 0, 255, 255)
+Yellow = (255, 255, 0, 255)
+Cyan = (0, 255, 255, 255)
 
 
 class Node:
@@ -58,10 +60,10 @@ class Node:
         if self.currentStart:
             pygame.draw.rect(surface, Green, self.body)
         if self.currentEnd:
-            pygame.draw.rect(surface, Red, self.body)
+            pygame.draw.rect(surface, Magenta, self.body)
         if self.reached:
             if not self.currentStart and not self.currentEnd and not self.path:
-                pygame.draw.rect(surface, BLUE, self.body)
+                pygame.draw.rect(surface, Cyan, self.body)
             elif self.path and not self.currentEnd:
                 pygame.draw.rect(surface, Yellow, self.body)
 
