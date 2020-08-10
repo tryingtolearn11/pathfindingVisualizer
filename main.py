@@ -40,6 +40,13 @@ class Node:
     def __lt__(ob1, ob2):
         return (ob1.x, ob1.y) < (ob2.x, ob2.y)
 
+    def resetNodes(self):
+        self.wall = False
+        self.currentStart = False
+        self.currentEnd = False
+        self.reached = False
+        self.path = False
+
     def drawNODE(self, surface):
         if self.wall:
             pygame.draw.rect(surface, Black, self.body)
@@ -55,6 +62,7 @@ class Node:
             elif self.path and not self.currentEnd:
                 pygame.draw.rect(surface, Yellow, self.body)
 
+    # Counts all neighbors including adjacent
     def getNeighbors(self, grid):
         self.neighbors = []
         if not self.wall:
@@ -74,6 +82,22 @@ class Node:
                 left = grid[self.x - 1][self.y]
             else:
                 left = None
+            if self.y > 0 and self.x > 0:
+                topleft = grid[self.x - 1][self.y - 1]
+            else:
+                topleft = None
+            if self.y > 0 and self.x < len(grid) - 1:
+                topright = grid[self.x + 1][self.y - 1]
+            else:
+                topright = None
+            if self.y < len(grid[i]) - 1 and self.x > 0:
+                bottomleft = grid[self.x - 1][self.y + 1]
+            else:
+                bottomleft = None
+            if self.y < len(grid[i]) - 1 and self.x < len(grid[i]) - 1:
+                bottomright = grid[self.x + 1][self.y + 1]
+            else:
+                bottomright = None
 
             if top and not top.wall:
                 self.neighbors.append(top)
@@ -83,6 +107,14 @@ class Node:
                 self.neighbors.append(bottom)
             if left and not left.wall:
                 self.neighbors.append(left)
+            if topleft and not topleft.wall:
+                self.neighbors.append(topleft)
+            if topright and not topright.wall:
+                self.neighbors.append(topright)
+            if bottomleft and not bottomleft.wall:
+                self.neighbors.append(bottomleft)
+            if bottomright and not bottomright.wall:
+                self.neighbors.append(bottomright)
 
 
 grid = []
@@ -173,9 +205,11 @@ def display(surface):
     height = ROWS * CELLSIZE
     pygame.draw.rect(surface, Red, (left-4, top-4, width+10, height+10), 5)
     drawGRID(surface)
+    # BUTTONS
     surface.blit(STARTNODE_SURF, STARTNODE_RECT)
     surface.blit(ENDNODE_SURF, ENDNODE_RECT)
     surface.blit(BEGIN_SURF, BEGIN_RECT)
+    surface.blit(RESET_SURF, RESET_RECT)
 
 
 def getMouseClick(surface, xpos, ypos):
@@ -196,9 +230,15 @@ def makeButton(text, color, bgcolor, top, left):
     return (textSurface, textRect)
 
 
+def reset(surface):
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            grid[i][j].resetNodes()
+
+
 def main():
     global grid, FPS, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
-    global BEGIN_SURF, BEGIN_RECT
+    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT
     pygame.init()
     markStartPos = False
     markEndPos = False
@@ -209,6 +249,7 @@ def main():
     STARTNODE_SURF, STARTNODE_RECT = makeButton('Start Node', Black, Green, SCREENWIDTH - 900, SCREENHEIGHT - 950)
     ENDNODE_SURF, ENDNODE_RECT = makeButton('End Node', Black, Red, SCREENWIDTH - 200, SCREENHEIGHT - 950)
     BEGIN_SURF, BEGIN_RECT = makeButton('BEGIN SEARCH', Black, BLUE, SCREENWIDTH - 900, SCREENWIDTH - 90)
+    RESET_SURF, RESET_RECT = makeButton('Reset', Black, White, SCREENWIDTH - 200, SCREENWIDTH - 90)
     running = True
     while running:
         for event in pygame.event.get():
@@ -219,7 +260,7 @@ def main():
                 for x in range(len(grid)):
                     for y in range(len(grid[x])):
                         if grid[x][y].body.collidepoint(event.pos):
-                            print("Grid :", x, y)
+                            # print("Grid :", x, y)
                             grid[x][y].wall = True
                             grid[x][y].currentStart = False
                             grid[x][y].currentEnd = False
@@ -255,6 +296,8 @@ def main():
                     parentCell = dijkstra(grid, STARTPOSITION, ENDPOSITION)
                     reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
 
+                if RESET_RECT.collidepoint(event.pos):
+                    reset(myWindow)
 
         FPSclock.tick(FPS)
         display(myWindow)
