@@ -5,7 +5,7 @@ SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 800
 BORDERHEIGHT = 800
-CELLSIZE = 50
+CELLSIZE = 40
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
@@ -40,12 +40,15 @@ class Node:
     def __lt__(ob1, ob2):
         return (ob1.x, ob1.y) < (ob2.x, ob2.y)
 
-    def resetNodes(self):
-        self.wall = False
+    def clearPath(self):
         self.currentStart = False
         self.currentEnd = False
         self.reached = False
         self.path = False
+
+    def resetNodes(self):
+        self.wall = False
+        self.clearPath()
 
     def drawNODE(self, surface):
         if self.wall:
@@ -210,6 +213,7 @@ def display(surface):
     surface.blit(ENDNODE_SURF, ENDNODE_RECT)
     surface.blit(BEGIN_SURF, BEGIN_RECT)
     surface.blit(RESET_SURF, RESET_RECT)
+    surface.blit(CLEARPATH_SURF, CLEARPATH_RECT)
 
 
 def getMouseClick(surface, xpos, ypos):
@@ -231,17 +235,25 @@ def makeButton(text, color, bgcolor, top, left):
 
 
 def reset(surface):
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            grid[i][j].resetNodes()
+    if resetPath:
+        for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                grid[i][j].clearPath()
+
+    elif resetBoard:
+        for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                grid[i][j].resetNodes()
 
 
 def main():
     global grid, FPS, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
-    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT
+    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT, CLEARPATH_SURF, CLEARPATH_RECT, resetPath, resetBoard
     pygame.init()
     markStartPos = False
     markEndPos = False
+    resetPath = False
+    resetBoard = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
     FPSclock = pygame.time.Clock()
@@ -250,6 +262,7 @@ def main():
     ENDNODE_SURF, ENDNODE_RECT = makeButton('End Node', Black, Red, SCREENWIDTH - 200, SCREENHEIGHT - 950)
     BEGIN_SURF, BEGIN_RECT = makeButton('BEGIN SEARCH', Black, BLUE, SCREENWIDTH - 900, SCREENWIDTH - 90)
     RESET_SURF, RESET_RECT = makeButton('Reset', Black, White, SCREENWIDTH - 200, SCREENWIDTH - 90)
+    CLEARPATH_SURF, CLEARPATH_RECT = makeButton('Clear Path', Black, White, SCREENWIDTH - 200, SCREENWIDTH - 60)
     running = True
     while running:
         for event in pygame.event.get():
@@ -297,6 +310,12 @@ def main():
                     reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
 
                 if RESET_RECT.collidepoint(event.pos):
+                    resetBoard = True
+                    resetPath = False
+                    reset(myWindow)
+                if CLEARPATH_RECT.collidepoint(event.pos):
+                    resetBoard = False
+                    resetPath = True
                     reset(myWindow)
 
         FPSclock.tick(FPS)
