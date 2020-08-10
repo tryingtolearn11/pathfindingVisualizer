@@ -151,7 +151,7 @@ def reconstructPath(parentCell, STARTPOSITION, ENDPOSITION):
         current = parentCell[current]
     path.append(STARTPOSITION)
     path.reverse()
-    print(path)
+
     return path
 
 
