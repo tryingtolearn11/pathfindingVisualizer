@@ -142,7 +142,6 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
     parentCell[STARTPOSITION] = None
     costOfPath[STARTPOSITION] = 0
     print("ENDPOSITION", ENDPOSITION)
-
     while not q.empty():
         current = q.get()
 
@@ -151,6 +150,7 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
             break
 
         current.getNeighbors(grid)
+
         for next in current.neighbors:
             # Update the cost for the path
             newCost = costOfPath[current] + cost(grid, current, next)
@@ -164,7 +164,6 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
                 #print("COST", cost(grid, current, next))
                 parentCell[next] = current
                 next.reached = True
-
     return parentCell
 
 
@@ -177,7 +176,8 @@ def reconstructPath(parentCell, STARTPOSITION, ENDPOSITION):
         current = parentCell[current]
     path.append(STARTPOSITION)
     path.reverse()
-
+    if len(path) > 0:
+        print("Path Length :", len(path) - 1)
     return path
 
 
