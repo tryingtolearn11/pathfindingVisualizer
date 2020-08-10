@@ -35,6 +35,9 @@ class Node:
         self.currentEnd = False
         self.reached = False
 
+    def __lt__(ob1, ob2):
+        return (ob1.x, ob1.y) < (ob2.x, ob2.y)
+
     def drawNODE(self, surface):
         if self.wall:
             pygame.draw.rect(surface, Black, self.body)
@@ -68,13 +71,13 @@ class Node:
             else:
                 left = None
 
-            if top:
+            if top and not top.wall:
                 self.neighbors.append(top)
-            if right:
+            if right and not right.wall:
                 self.neighbors.append(right)
-            if bottom:
+            if bottom and not bottom.wall:
                 self.neighbors.append(bottom)
-            if left:
+            if left and not left.wall:
                 self.neighbors.append(left)
 
 
@@ -119,14 +122,14 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
             for p in costOfPath:
                 total += costOfPath[p]
             # TODO: fix bug- '<' not supported
-            if next not in costOfPath or newCost < total:
-                print(costOfPath)
-                print("total :", total)
+            if next not in costOfPath or newCost < costOfPath[next]:
+                #print(costOfPath)
+                #print("total :", total)
                 costOfPath[next] = newCost
                 priority = newCost
-                #q.put(next, priority)
+                q.put(next, priority)
                 #print("priority", priority)
-                print("newCost", newCost)
+                #print("newCost", newCost)
                 #print("COST OF PATH[CURRENT]", costOfPath[current])
                 #print("COST", cost(grid, current, next))
                 parentCell[next] = current
