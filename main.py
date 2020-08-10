@@ -5,7 +5,7 @@ SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 800
 BORDERHEIGHT = 800
-CELLSIZE = 50
+CELLSIZE = 30
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
@@ -122,7 +122,7 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
         for next in current.neighbors:
             # Update the cost for the path
             newCost = costOfPath[current] + cost(grid, current, next)
-            while next not in costOfPath or newCost < costOfPath[next]:
+            if next not in costOfPath or newCost < costOfPath[next]:
                 costOfPath[next] = newCost
                 priority = newCost
                 q.put(next, priority)
@@ -254,6 +254,7 @@ def main():
                 if BEGIN_RECT.collidepoint(event.pos):
                     parentCell = dijkstra(grid, STARTPOSITION, ENDPOSITION)
                     reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
+
 
         FPSclock.tick(FPS)
         display(myWindow)
