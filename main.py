@@ -5,7 +5,7 @@ SCREENWIDTH = 1000
 SCREENHEIGHT = 1000
 BORDERWIDTH = 800
 BORDERHEIGHT = 800
-CELLSIZE = 40
+CELLSIZE = 20
 ROWS = BORDERWIDTH // CELLSIZE
 COLS = BORDERHEIGHT // CELLSIZE
 print("ROWS: ", ROWS, "COLS: ", COLS)
@@ -43,14 +43,14 @@ class Node:
         return (ob1.x, ob1.y) < (ob2.x, ob2.y)
 
     def clearPath(self):
-        self.currentStart = False
-        self.currentEnd = False
         self.reached = False
         self.path = False
 
     def resetNodes(self):
         self.wall = False
         self.clearPath()
+        self.currentStart = False
+        self.currentEnd = False
 
     def drawNODE(self, surface):
         if self.wall:
@@ -70,56 +70,55 @@ class Node:
     # Counts all neighbors including adjacent
     def getNeighbors(self, grid):
         self.neighbors = []
-        if not self.wall:
-            if self.y > 0:
-                top = grid[self.x][self.y - 1]
-            else:
-                top = None
-            if self.x < len(grid) - 1:
-                right = grid[self.x + 1][self.y]
-            else:
-                right = None
-            if self.y < len(grid[i]) - 1:
-                bottom = grid[self.x][self.y + 1]
-            else:
-                bottom = None
-            if self.x > 0:
-                left = grid[self.x - 1][self.y]
-            else:
-                left = None
-            if self.y > 0 and self.x > 0:
-                topleft = grid[self.x - 1][self.y - 1]
-            else:
-                topleft = None
-            if self.y > 0 and self.x < len(grid) - 1:
-                topright = grid[self.x + 1][self.y - 1]
-            else:
-                topright = None
-            if self.y < len(grid[i]) - 1 and self.x > 0:
-                bottomleft = grid[self.x - 1][self.y + 1]
-            else:
-                bottomleft = None
-            if self.y < len(grid[i]) - 1 and self.x < len(grid[i]) - 1:
-                bottomright = grid[self.x + 1][self.y + 1]
-            else:
-                bottomright = None
+        if self.y > 0:
+            top = grid[self.x][self.y - 1]
+        else:
+            top = None
+        if self.x < len(grid) - 1:
+            right = grid[self.x + 1][self.y]
+        else:
+            right = None
+        if self.y < len(grid[i]) - 1:
+            bottom = grid[self.x][self.y + 1]
+        else:
+            bottom = None
+        if self.x > 0:
+            left = grid[self.x - 1][self.y]
+        else:
+            left = None
+        if self.y > 0 and self.x > 0:
+            topleft = grid[self.x - 1][self.y - 1]
+        else:
+            topleft = None
+        if self.y > 0 and self.x < len(grid) - 1:
+            topright = grid[self.x + 1][self.y - 1]
+        else:
+            topright = None
+        if self.y < len(grid[i]) - 1 and self.x > 0:
+            bottomleft = grid[self.x - 1][self.y + 1]
+        else:
+            bottomleft = None
+        if self.y < len(grid[i]) - 1 and self.x < len(grid[i]) - 1:
+            bottomright = grid[self.x + 1][self.y + 1]
+        else:
+            bottomright = None
 
-            if top and not top.wall:
-                self.neighbors.append(top)
-            if right and not right.wall:
-                self.neighbors.append(right)
-            if bottom and not bottom.wall:
-                self.neighbors.append(bottom)
-            if left and not left.wall:
-                self.neighbors.append(left)
-            if topleft and not topleft.wall:
-                self.neighbors.append(topleft)
-            if topright and not topright.wall:
-                self.neighbors.append(topright)
-            if bottomleft and not bottomleft.wall:
-                self.neighbors.append(bottomleft)
-            if bottomright and not bottomright.wall:
-                self.neighbors.append(bottomright)
+        if top and not top.wall:
+            self.neighbors.append(top)
+        if right and not right.wall:
+            self.neighbors.append(right)
+        if bottom and not bottom.wall:
+            self.neighbors.append(bottom)
+        if left and not left.wall:
+            self.neighbors.append(left)
+        if topleft and not topleft.wall:
+            self.neighbors.append(topleft)
+        if topright and not topright.wall:
+            self.neighbors.append(topright)
+        if bottomleft and not bottomleft.wall:
+            self.neighbors.append(bottomleft)
+        if bottomright and not bottomright.wall:
+            self.neighbors.append(bottomright)
 
 
 grid = []
@@ -147,6 +146,11 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
     parentCell[STARTPOSITION] = None
     costOfPath[STARTPOSITION] = 0
     print("ENDPOSITION", ENDPOSITION)
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            grid[i][j].getNeighbors(grid)
+
     while not q.empty():
         current = q.get()
 
@@ -154,22 +158,64 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
             print("FOUND END")
             break
 
-        current.getNeighbors(grid)
+        #current.getNeighbors(grid)
 
+        for next in current.neighbors:
+            # Update the cost for the path
+            newCost = costOfPath[current] + cost(grid, current, next)
+
+            if next not in costOfPath or newCost < costOfPath[next]:
+                costOfPath[next] = newCost
+                priority = newCost
+                q.put(next, priority)
+                print("priority", priority)
+                # print("newCost", newCost)
+                # print("COST OF PATH[CURRENT]", costOfPath[current])
+                # print("COST", cost(grid, current, next))
+                next.reached = True
+                parentCell[next] = current
+
+    return parentCell
+
+
+def ASTAR(grid, STARTPOSITION, ENDPOSITION):
+    q = queue.PriorityQueue()
+    q.put(STARTPOSITION, 0)
+    parentCell = {}
+    costOfPath = {}
+    parentCell[STARTPOSITION] = None
+    costOfPath[STARTPOSITION] = 0
+    print("ENDPOSITION", ENDPOSITION)
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            grid[i][j].getNeighbors(grid)
+
+    while not q.empty():
+        current = q.get()
+
+        if current == ENDPOSITION:
+            print("FOUND END")
+            break
         for next in current.neighbors:
             # Update the cost for the path
             newCost = costOfPath[current] + cost(grid, current, next)
             if next not in costOfPath or newCost < costOfPath[next]:
                 costOfPath[next] = newCost
-                priority = newCost
+                priority = newCost + heuristic(ENDPOSITION, next)
                 q.put(next, priority)
-                #print("priority", priority)
-                #print("newCost", newCost)
-                #print("COST OF PATH[CURRENT]", costOfPath[current])
-                #print("COST", cost(grid, current, next))
-                parentCell[next] = current
+                print("priority", priority)
+                # print("newCost", newCost)
+                # print("COST OF PATH[CURRENT]", costOfPath[current])
+                # print("COST", cost(grid, current, next))
                 next.reached = True
+                parentCell[next] = current
+
     return parentCell
+
+
+def heuristic(ENDPOSITION, next):
+    return abs(ENDPOSITION.x - next.x) + abs(ENDPOSITION.y - next.y)
 
 
 def reconstructPath(parentCell, STARTPOSITION, ENDPOSITION):
@@ -216,6 +262,7 @@ def display(surface):
     surface.blit(BEGIN_SURF, BEGIN_RECT)
     surface.blit(RESET_SURF, RESET_RECT)
     surface.blit(CLEARPATH_SURF, CLEARPATH_RECT)
+    surface.blit(ASTAR_SURF, ASTAR_RECT)
 
 
 def getMouseClick(surface, xpos, ypos):
@@ -250,23 +297,27 @@ def reset(surface):
 
 def main():
     global grid, FPS, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
-    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT, CLEARPATH_SURF, CLEARPATH_RECT, resetPath, resetBoard
+    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT, CLEARPATH_SURF, CLEARPATH_RECT, resetPath, resetBoard, STARTDIJKSTRA, START_ASTAR, ASTAR_SURF, ASTAR_RECT
     pygame.init()
     markStartPos = False
     markEndPos = False
     resetPath = False
     resetBoard = False
+    STARTDIJKSTRA = False
+    START_ASTAR = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
     FPSclock = pygame.time.Clock()
     BASICFONT = pygame.font.SysFont('arial', 20)
     STARTNODE_SURF, STARTNODE_RECT = makeButton('Start Node', Black, Green, SCREENWIDTH - 900, SCREENHEIGHT - 950)
     ENDNODE_SURF, ENDNODE_RECT = makeButton('End Node', Black, Red, SCREENWIDTH - 200, SCREENHEIGHT - 950)
-    BEGIN_SURF, BEGIN_RECT = makeButton('BEGIN SEARCH', Black, BLUE, SCREENWIDTH - 900, SCREENWIDTH - 90)
+    BEGIN_SURF, BEGIN_RECT = makeButton('Dijkstra Search', Black, BLUE, SCREENWIDTH - 900, SCREENWIDTH - 90)
     RESET_SURF, RESET_RECT = makeButton('Reset', Black, White, SCREENWIDTH - 200, SCREENWIDTH - 90)
     CLEARPATH_SURF, CLEARPATH_RECT = makeButton('Clear Path', Black, White, SCREENWIDTH - 200, SCREENWIDTH - 60)
+    ASTAR_SURF, ASTAR_RECT = makeButton('A* Search', Black, (255, 100, 100, 100), SCREENWIDTH - 700, SCREENHEIGHT - 90)
     running = True
     while running:
+        pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -308,7 +359,14 @@ def main():
                                 grid[x][y].wall = False
 
                 if BEGIN_RECT.collidepoint(event.pos):
+                    STARTDIJKSTRA = True
+                    START_ASTAR = False
                     parentCell = dijkstra(grid, STARTPOSITION, ENDPOSITION)
+                    reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
+                if ASTAR_RECT.collidepoint(event.pos):
+                    STARTDIJKSTRA = False
+                    START_ASTAR = True
+                    parentCell = ASTAR(grid, STARTPOSITION, ENDPOSITION)
                     reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
 
                 if RESET_RECT.collidepoint(event.pos):
@@ -322,7 +380,6 @@ def main():
 
         FPSclock.tick(FPS)
         display(myWindow)
-        pygame.display.update()
 
 
 if __name__ == '__main__':
