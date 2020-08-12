@@ -145,7 +145,6 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
     costOfPath = {}
     parentCell[STARTPOSITION] = None
     costOfPath[STARTPOSITION] = 0
-    print("ENDPOSITION", ENDPOSITION)
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -156,25 +155,17 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
 
         if current == ENDPOSITION:
             print("FOUND END")
-            break
+            return reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
 
-        #current.getNeighbors(grid)
-
-        for next in current.neighbors:
-            # Update the cost for the path
+        neighbors = current.neighbors
+        for next in neighbors:
             newCost = costOfPath[current] + cost(grid, current, next)
-
-            if next not in costOfPath or newCost < costOfPath[next]:
+            if next not in parentCell or newCost < costOfPath[next]:
                 costOfPath[next] = newCost
                 priority = newCost
                 q.put(next, priority)
-                print("priority", priority)
-                # print("newCost", newCost)
-                # print("COST OF PATH[CURRENT]", costOfPath[current])
-                # print("COST", cost(grid, current, next))
                 next.reached = True
                 parentCell[next] = current
-
     return parentCell
 
 
@@ -204,10 +195,6 @@ def ASTAR(grid, STARTPOSITION, ENDPOSITION):
                 costOfPath[next] = newCost
                 priority = newCost + heuristic(ENDPOSITION, next)
                 q.put(next, priority)
-                print("priority", priority)
-                # print("newCost", newCost)
-                # print("COST OF PATH[CURRENT]", costOfPath[current])
-                # print("COST", cost(grid, current, next))
                 next.reached = True
                 parentCell[next] = current
 
@@ -256,6 +243,8 @@ def display(surface):
     height = ROWS * CELLSIZE
     pygame.draw.rect(surface, Red, (left-4, top-4, width+10, height+10), 5)
     drawGRID(surface)
+    if BEGINSEARCH:
+        dijkstra(grid, STARTPOSITION, ENDPOSITION)
     # BUTTONS
     surface.blit(STARTNODE_SURF, STARTNODE_RECT)
     surface.blit(ENDNODE_SURF, ENDNODE_RECT)
@@ -297,7 +286,7 @@ def reset(surface):
 
 def main():
     global grid, FPS, STARTNODE_SURF, STARTNODE_RECT, ENDNODE_SURF, ENDNODE_RECT, BASICFONT, markStartPos, markEndPos, STARTPOSITION, ENDPOSITION
-    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT, CLEARPATH_SURF, CLEARPATH_RECT, resetPath, resetBoard, STARTDIJKSTRA, START_ASTAR, ASTAR_SURF, ASTAR_RECT
+    global BEGIN_SURF, BEGIN_RECT, RESET_SURF, RESET_RECT, CLEARPATH_SURF, CLEARPATH_RECT, resetPath, resetBoard, STARTDIJKSTRA, START_ASTAR, ASTAR_SURF, ASTAR_RECT, BEGINSEARCH
     pygame.init()
     markStartPos = False
     markEndPos = False
@@ -305,6 +294,7 @@ def main():
     resetBoard = False
     STARTDIJKSTRA = False
     START_ASTAR = False
+    BEGINSEARCH = False
     myWindow = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption("Visualizer")
     FPSclock = pygame.time.Clock()
@@ -361,8 +351,7 @@ def main():
                 if BEGIN_RECT.collidepoint(event.pos):
                     STARTDIJKSTRA = True
                     START_ASTAR = False
-                    parentCell = dijkstra(grid, STARTPOSITION, ENDPOSITION)
-                    reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
+                    BEGINSEARCH = True
                 if ASTAR_RECT.collidepoint(event.pos):
                     STARTDIJKSTRA = False
                     START_ASTAR = True
