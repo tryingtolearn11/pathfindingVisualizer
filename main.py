@@ -38,6 +38,7 @@ class Node:
         self.reached = False
         self.path = False
 
+
     # Comparison operator defined
     def __lt__(ob1, ob2):
         return (ob1.x, ob1.y) < (ob2.x, ob2.y)
@@ -146,58 +147,29 @@ def dijkstra(grid, STARTPOSITION, ENDPOSITION):
     parentCell[STARTPOSITION] = None
     costOfPath[STARTPOSITION] = 0
 
+    # Count neighbors
     for i in range(len(grid)):
         for j in range(len(grid[i])):
             grid[i][j].getNeighbors(grid)
 
-    while not q.empty():
+    if not q.empty():
         current = q.get()
 
         if current == ENDPOSITION:
+            reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
             print("FOUND END")
-            return reconstructPath(parentCell, STARTPOSITION, ENDPOSITION)
 
-        neighbors = current.neighbors
-        for next in neighbors:
+        for next in current.neighbors:
             newCost = costOfPath[current] + cost(grid, current, next)
             if next not in parentCell or newCost < costOfPath[next]:
                 costOfPath[next] = newCost
                 priority = newCost
                 q.put(next, priority)
-                next.reached = True
                 parentCell[next] = current
-    return parentCell
-
-
-def ASTAR(grid, STARTPOSITION, ENDPOSITION):
-    q = queue.PriorityQueue()
-    q.put(STARTPOSITION, 0)
-    parentCell = {}
-    costOfPath = {}
-    parentCell[STARTPOSITION] = None
-    costOfPath[STARTPOSITION] = 0
-    print("ENDPOSITION", ENDPOSITION)
-
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            grid[i][j].getNeighbors(grid)
-
-    while not q.empty():
-        current = q.get()
-
-        if current == ENDPOSITION:
-            print("FOUND END")
-            break
-        for next in current.neighbors:
-            # Update the cost for the path
-            newCost = costOfPath[current] + cost(grid, current, next)
-            if next not in costOfPath or newCost < costOfPath[next]:
-                costOfPath[next] = newCost
-                priority = newCost + heuristic(ENDPOSITION, next)
-                q.put(next, priority)
                 next.reached = True
-                parentCell[next] = current
-
+    else:
+        print("NO SOLUTION")
+    print("Frontier :", q.qsize())
     return parentCell
 
 
@@ -352,6 +324,7 @@ def main():
                     STARTDIJKSTRA = True
                     START_ASTAR = False
                     BEGINSEARCH = True
+
                 if ASTAR_RECT.collidepoint(event.pos):
                     STARTDIJKSTRA = False
                     START_ASTAR = True
